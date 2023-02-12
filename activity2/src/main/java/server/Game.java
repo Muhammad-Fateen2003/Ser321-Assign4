@@ -61,7 +61,7 @@ public class Game {
                 col = 0;
                 int randInt = rand.nextInt(files.size());
                 File file = new File(
-                        Game.class.getResource("/"+files.get(randInt)).getFile()
+                        Game.class.getResource("/"+files.get(randInt)).getFile().replace("%20", " ")
                         );
                 BufferedReader br = new BufferedReader(new FileReader(file));
                 String line;

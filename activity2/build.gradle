@@ -61,4 +61,13 @@ task runServer(type: JavaExec) {
   args '1000' // sleep delay will always be this
 }
 
+sourceSets {
+    main {
+        java {
+            srcDir "build/generated/source/proto/main/java/buffers"
+        }
+    }
+}
+
+
 
