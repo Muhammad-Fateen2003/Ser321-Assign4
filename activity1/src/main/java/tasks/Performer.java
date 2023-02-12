@@ -1,31 +1,30 @@
 /**
   File: Performer.java
   Author: Student in Fall 2020B
-  Description: Performer class in package tasktwo.
+  Description: Performer class in package taskone.
 */
 
-package taskone;
+package tasks;
 
-import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
+import org.json.JSONObject;
+
 /**
  * Class: Performer 
  * Description: Threaded Performer for server tasks.
  */
-class ThreadedPerformer extends Thread {
+class Performer {
 
     private StringList state;
     private Socket conn;
-    private int id;
 
-    public ThreadedPerformer(Socket sock, StringList strings, int id) {
+    public Performer(Socket sock, StringList strings) {
         this.conn = sock;
         this.state = strings;
-        this.id = id;
     }
 
     public JSONObject add(String str) {
@@ -73,6 +72,7 @@ class ThreadedPerformer extends Thread {
     }
 
     private JSONObject prepend(String str) {
+        //TODO: Fix index out of Bound Error
         JSONObject json = new JSONObject();
         json.put("ok", true);
         json.put("type", "prepend");
@@ -97,65 +97,72 @@ class ThreadedPerformer extends Thread {
         return json;
     }
 
-    @Override
-    public void run() {
+    public void doPerform() {
         boolean quit = false;
         OutputStream out = null;
         InputStream in = null;
         try {
             out = conn.getOutputStream();
             in = conn.getInputStream();
-            System.out.println("Server connected to client-" + id);
+            System.out.println("Server connected to client:");
             while (!quit) {
                 byte[] messageBytes = NetworkUtils.receive(in);
                 JSONObject message = JsonUtils.fromByteArray(messageBytes);
                 JSONObject returnMessage = new JSONObject();
-
+   
                 int choice = message.getInt("selected");
                 String inStr;
-                switch (choice) {
-                    case (1):
-                        inStr = (String) message.get("data");
-                        returnMessage = add(inStr);
-                        break;
-                    case (2):
-                        returnMessage = clear();
-                        break;
-                    case (3):
-                        inStr = (String) message.get("data");
-                        returnMessage = find(inStr);
-                        break;
-                    case (4):
-                        returnMessage = display();
-                        break;
-                    case (5):
-                        returnMessage = sort();
-                        break;
-                    case (6):
-                        inStr = (String) message.get("data");
-                        returnMessage = prepend(inStr);
-                        break;
-                    case (0):
-                        returnMessage = quit();
-                        quit = true;
-                        break;
-                    default:
-                        returnMessage = error("Invalid selection: " + choice
-                                + " is not an option");
-                        break;
-                }
+                    switch (choice) {
+                        case (1):
+                            inStr = (String) message.get("data");
+                            returnMessage = add(inStr);
+                            break;
+                        case (2):
+                            returnMessage = clear();
+                            break;
+                        case (3):
+                            inStr = (String) message.get("data");
+                            returnMessage = find(inStr);
+                            break;
+                        case (4):
+                            returnMessage = display();
+                            break;
+                        case (5):
+                            returnMessage = sort();
+                            break;
+                        case (6):
+                            inStr = (String) message.get("data");
+                            JSONObject temp;
+                            try {
+                                temp =  prepend(inStr);
+                            } catch (IndexOutOfBoundsException e) {
+                                returnMessage = error("Error: Index not in list. Please Prepend with a valid index");
+                                break;
+                            }
+                            returnMessage = temp;
+                            break;
+                        case (0):
+                            returnMessage = quit();
+                            quit = true;
+                            break;
+                        default:
+                            returnMessage = error("Invalid selection: " + choice 
+                                    + " is not an option");
+                            break;
+                    }
                 // we are converting the JSON object we have to a byte[]
                 byte[] output = JsonUtils.toByteArray(returnMessage);
                 NetworkUtils.send(out, output);
             }
             // close the resource
-            System.out.println("close the resources of client-" + id);
+            System.out.println("close the resources of client ");
             out.close();
             in.close();
-//        } catch (SocketException e1) {
-//            System.out.println("Client Disconnected");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Client Abruptly Disconnected");
+        } catch (Exception e1) {
+            System.out.println("Unexpected Error");
         }
     }
+
 }

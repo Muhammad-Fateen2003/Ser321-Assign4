@@ -33,7 +33,7 @@ protobuf {
 // task reading in the arguments if any given, if not the default from above will be used
 task arguments {
     if (project.hasProperty("host")) {
-      host = project.getProperty("host")
+        host = project.getProperty("host")
     }
     if (project.hasProperty("port")) {
       port = project.getProperty("port")

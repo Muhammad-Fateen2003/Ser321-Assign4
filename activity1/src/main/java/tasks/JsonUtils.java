@@ -4,9 +4,8 @@
   Description: JsonUtils class in package taskone.
 */
 
-package taskone;
+package tasks;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**

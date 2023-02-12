@@ -4,23 +4,16 @@
   Description: Client class in package taskone.
 */
 
-package taskone;
+package tasks;
 
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.Base64;
 import java.util.Scanner;
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+
 import org.json.JSONObject;
 
 /**
@@ -178,7 +171,12 @@ public class Client {
                 System.out.println("6. prepend <int> <string> - prepends given string to string at idx");
                 System.out.println("0. quit");
                 System.out.println();
-                choice = input.nextInt(); // what if not int? should error handle this
+                String test = input.nextLine(); // what if not int? should error handle this
+                while (!test.matches("\\d+")) {
+                    System.out.println("Invalid input, please enter a number (with any number of digits)");
+                    test = input.nextLine();
+                }
+                choice = Integer.parseInt(test);
                 JSONObject request = null;
                 switch (choice) {
                     case (1):
@@ -233,7 +231,7 @@ public class Client {
                 }
             } while (true);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Error: Server Unavailable");
         }
     }
 }

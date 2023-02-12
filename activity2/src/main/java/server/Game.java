@@ -187,6 +187,19 @@ public class Game {
     }
 
     /**
+     *
+     * @param row
+     * @param col
+     * @return character at selected row and column for hidden
+     */
+    public synchronized char getHiddenTile(int row, int col) {
+        if (row < hidden.length && col < hidden[0].length)
+            return hidden[row][col];
+        else
+            return '?';
+    }
+
+    /**
      * Method that replaces a character, needed when a match was found, would need to be called twice
      * You can of course also change it to get to rows and two cols if you like
      * @return String of the current hidden board

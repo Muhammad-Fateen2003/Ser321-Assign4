@@ -12,7 +12,7 @@ import buffers.RequestProtos.Message;
 import buffers.ResponseProtos.Response;
 import buffers.ResponseProtos.Entry;
 
-class SockBaseServer {
+class SockBaseServer extends Thread{
     static String logFilename = "logs.txt";
 
     ServerSocket serv = null;
@@ -21,17 +21,21 @@ class SockBaseServer {
     Socket clientSocket = null;
     int port = 9099; // default port
     Game game;
+    int tile1row = 0;
+    int tile1col = 0;
+    JSONArray player;
+    JSONObject stats = new JSONObject();
 
 
     public SockBaseServer(Socket sock, Game game){
         this.clientSocket = sock;
         this.game = game;
-        try {
-            in = clientSocket.getInputStream();
-            out = clientSocket.getOutputStream();
-        } catch (Exception e){
-            System.out.println("Error in constructor: " + e);
-        }
+//        try {
+//            in = clientSocket.getInputStream();
+//            out = clientSocket.getOutputStream();
+//        } catch (Exception e){
+//            System.out.println("Error in constructor: " + e);
+//        }
     }
 
     // Handles the communication right now it just accepts one input and then is done you should make sure the server stays open
@@ -40,7 +44,7 @@ class SockBaseServer {
     public void start() throws IOException {
         String name = "";
 
-
+        ReadJSONFile();
         System.out.println("Ready...");
         try {
             // read the proto object and put into new objct
@@ -136,11 +140,15 @@ class SockBaseServer {
             // ========= Example end
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            System.out.println("Client abruptly Closed");
         } finally {
-            if (out != null)  out.close();
-            if (in != null)   in.close();
-            if (clientSocket != null) clientSocket.close();
+            try {
+                if (out != null) out.close();
+                if (in != null) in.close();
+                if (clientSocket != null) clientSocket.close();
+            } catch (IOException e){
+                System.out.println("Closing sockets and streams, please wait...");
+            }
         }
     }
 
@@ -199,6 +207,58 @@ class SockBaseServer {
         }
     }
 
+    public int returnSearch(JSONArray array, String searchValue){
+        for (int i = 0; i < array.length(); i++) {
+            JSONObject obj= null;
+            try {
+                obj = array.getJSONObject(i);
+                if(obj.getString("name").equals(searchValue))
+                {
+                    return i;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return -1;
+    }
+
+    void writeToLeader(String playerName, boolean won, boolean login) {
+        //playername, points
+        int index = returnSearch(player, playerName);
+        if(index != -1 && won){
+            int prevWins = player.getJSONObject(index).getInt("wins");
+            player.getJSONObject(index).put("wins", prevWins + 1);
+        } else if (index != -1 && login) {
+//            player.getJSONObject(index).put("name", playerName);
+//            player.getJSONObject(index).put("wins", player.getJSONObject(index).getInt("wins"));
+            int prevLogins = player.getJSONObject(index).getInt("logins");
+            player.getJSONObject(index).put("logins", prevLogins + 1);
+        } else {
+            stats.put("name", playerName);
+            stats.put("wins", 0);
+            stats.put("logins", 1);
+            player.put(stats);
+        }
+        try {
+            FileWriter lbWriter = new FileWriter("src/main/json/leaderboard.json");
+            lbWriter.write(player.toString());
+            lbWriter.flush();
+            lbWriter.close();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    void ReadJSONFile(){
+        try {
+            FileReader lbReader = new FileReader("src/main/json/leaderboard.json");
+            player = new JSONArray(new JSONTokener(lbReader));
+        } catch (Exception e) {
+            player = new JSONArray();
+        }
+    }
 
     public static void main (String args[]) throws Exception {
         Game game = new Game();
@@ -226,10 +286,35 @@ class SockBaseServer {
             System.exit(2);
         }
 
-        clientSocket = serv.accept();
-        SockBaseServer server = new SockBaseServer(clientSocket, game);
-        server.start();
-
+        try {
+            while (true) {
+                Socket sock = null;
+                try {
+                    clientSocket = serv.accept();
+                    SockBaseServer server = new SockBaseServer(clientSocket, game);
+                    server.start();
+                } catch (NullPointerException e1) {
+                    System.out.println("Client disconnect");
+                } catch (Exception e2) {
+                    System.out.println("Client disconnect");
+                } finally {
+                    if (sock != null) {
+                        sock.close();
+                        System.out.println("Socket closed");
+                    }
+                }
+            }
+        } catch (IOException e) {
+            System.out.println(e.toString());
+        } finally {
+            if (serv != null) {
+                try {
+                    serv.close();
+                } catch (IOException e) {
+                    System.out.println(e.toString());
+                }
+            }
+        }
     }
 }
 

@@ -4,7 +4,7 @@
   Description: NetworkUtils class in package taskone.
 */
 
-package taskone;
+package tasks;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,11 +40,7 @@ public class NetworkUtils {
     private static byte[] read(InputStream in, int length) throws IOException {
         byte[] bytes = new byte[length];
         int bytesRead = 0;
-        try {
             bytesRead = in.read(bytes, 0, length);
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
 
         if (bytesRead != length) {
             return null;

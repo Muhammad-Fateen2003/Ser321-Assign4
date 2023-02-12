@@ -1,12 +1,10 @@
-package taskone;
+package tasks;
 
 import java.util.List;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 
 class StringList {

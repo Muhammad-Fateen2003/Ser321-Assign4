@@ -4,7 +4,7 @@
   Description: Server class in package tasktwo.
 */
 
-package taskone;
+package tasks;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -33,23 +33,33 @@ class ThreadedServer {
             System.out.println("[Port] must be an integer");
             System.exit(2);
         }
+        ServerSocket server = new ServerSocket(port);
+        System.out.println("Server Started...");
         try {
-            ServerSocket server = new ServerSocket(port);
-            System.out.println("Server Started...");
             while (true) {
-                sock = server.accept();
-                System.out.println("Accepted a Request..."); //was "Accepting a request" before.
-//                System.out.println("Threaded server connected to client-" + id);
-                ThreadedPerformer threadedPerformer = new ThreadedPerformer(sock, strings, id);
-                threadedPerformer.start();
-                id ++;
+                System.out.println("Accepting Requests...");
+                try {
+                    sock = server.accept();
+
+                    ThreadedPerformer threadedPerformer = new ThreadedPerformer(sock, strings, id);
+                    threadedPerformer.start();
+                    id ++;
+                } catch (NullPointerException e1) {
+                    System.out.println("Client disconnect");
+                } catch (Exception e2) {
+                    System.out.println("Client disconnect");
+                }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.toString());
         } finally {
-            if (sock != null) {
-                System.out.println("close socket of client ");
-                sock.close();
+            if (server != null) {
+                try {
+                    System.out.println("close socket of client ");
+                    sock.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
